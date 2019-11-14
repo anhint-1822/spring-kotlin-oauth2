@@ -39,9 +39,4 @@ class ArticleController(private val articleRepository: ArticleRepository) {
             ResponseEntity<Void>(HttpStatus.OK);
         }.orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping
-    fun showMessage() : String {
-        return "This is api test";
-    }
 }
