@@ -99,13 +99,14 @@ class AuthController {
     }
 
     fun resetToken(httpServletRequest: HttpServletRequest): ResponseEntity<*> {
-        var token : String = httpServletRequest.getHeader("Authorization")
-        if(token!=null && token.contains("Bearer")) {
+        var token: String = httpServletRequest.getHeader("Authorization")
+        if (token != null && token.contains("Bearer")) {
             token = token.substring("Bearer ".length, token.length)
         }
+        return ResponseEntity(ReponseMessage("Token success response"), HttpStatus.OK)
     }
 
-        private fun emailExists(email: String): Boolean {
+    private fun emailExists(email: String): Boolean {
         return userRepository.findByUsername(email).isPresent
     }
 
