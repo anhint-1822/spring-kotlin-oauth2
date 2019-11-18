@@ -12,8 +12,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer
 import org.springframework.security.oauth2.provider.token.TokenStore
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
+import javax.sql.DataSource
 
 @Configuration
 @EnableConfigurationProperties(OAuth2Properties::class, JwtProperties::class)
@@ -22,7 +24,8 @@ class AuthorizationServerConfiguration(private val oAuth2Properties: OAuth2Prope
                                        private val jwtProperties: JwtProperties,
                                        private val passwordEncoder: PasswordEncoder,
                                        private val authenticationManager: AuthenticationManager,
-                                       private val userDetailsService: UserDetailsService) : AuthorizationServerConfigurerAdapter() {
+                                       private val userDetailsService: UserDetailsService,
+                                       private val dataSource: DataSource) : AuthorizationServerConfigurerAdapter() {
 
     // =================================================================================================================
     // JWT configuration
@@ -37,7 +40,7 @@ class AuthorizationServerConfiguration(private val oAuth2Properties: OAuth2Prope
 
     @Bean
     fun tokenStore(): TokenStore {
-        return JwtTokenStore(accessTokenConverter())
+        return JdbcTokenStore(dataSource)
     }
 
     // =================================================================================================================
@@ -47,7 +50,7 @@ class AuthorizationServerConfiguration(private val oAuth2Properties: OAuth2Prope
     @Throws(Exception::class)
     override fun configure(clients: ClientDetailsServiceConfigurer) {
         clients
-                .inMemory()
+                .jdbc(dataSource)
                 .withClient(oAuth2Properties.clientId)
                 .secret(passwordEncoder.encode(oAuth2Properties.clientSecret))
                 .authorizedGrantTypes(*oAuth2Properties.grantTypes.toTypedArray())
