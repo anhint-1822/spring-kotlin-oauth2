@@ -1,0 +1,44 @@
+server:
+  port: 8901
+
+logging:
+  level:
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.ashina.backend: DEBUG
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/authorization_server?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
+    username: postgres
+    password: 1234
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        temp.use_jdbc_metadata_defaults: false
+    show-sql: true
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+
+security:
+  oauth2:
+    resource:
+      filter-order: 3
+
+app:
+  oauth2:
+    client-id: myapp
+    client-secret: secret
+    grant-types: authorization_code,password,refresh_token
+    scopes: read,write
+    access-token-validity-seconds: 2592000
+    refresh-token-validity-seconds: 2592000
+    resource-ids: myapi
+    redirect-uris: http://example.com
+  jwt:
+    signing-key: mykey
