@@ -1,4 +1,16 @@
-0. Create 2 PostgreSQL databases: `authorization-server` and `resource-server`
+First, run docker compose use: `docker-compose up`
+
+In project, Mysql running port: 3307 and redis running port:  6379 . If you change port , please specific it  
+in docker-compose.yml
+
+Use redis cli please use command : docker exec -it IdContainerRedis redis-cli
+
+In redis-cli : If you want monitor everything process(input,output) redis use command : monitor
+
+With Api reset password: Please input username and password of email in application.yml. Then input email of user missing password.
+Api auto send to email use input. Please check token in email and confirm new password.
+
+ Create 2 Mysql databases: `authorization-server` and `resource-server`
 
 1. Run authorization server (port 8901) and resource server (port 8080)
 

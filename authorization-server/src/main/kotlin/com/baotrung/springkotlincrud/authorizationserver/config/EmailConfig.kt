@@ -14,7 +14,6 @@ class EmailConfig {
     @Value("\${email.host}")
     private val emailHost: String = ""
 
-
     @Value("\${email.port}")
     private val emailPort: Int? = null
 

@@ -16,7 +16,7 @@ class UserController(private val userService: UserService) {
         userService.register(reqDto)
     }
 
-    @PostMapping("/users/forgot-password")
+    @GetMapping("/users/forgot-password")
     fun forgotPassword(@Valid @RequestParam("email") email: String, httpServletRequest: HttpServletRequest){
         userService.forgotPassword(email, httpServletRequest)
     }
