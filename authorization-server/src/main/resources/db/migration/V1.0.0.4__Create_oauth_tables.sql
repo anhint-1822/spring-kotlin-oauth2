@@ -16,7 +16,7 @@ create table oauth_client_details (
 
 create table oauth_client_token (
   token_id VARCHAR(255),
-  token BYTEA,
+  token LONGBLOB,
   authentication_id VARCHAR(255),
   user_name VARCHAR(255),
   client_id VARCHAR(255),
@@ -25,23 +25,23 @@ create table oauth_client_token (
 
 create table oauth_access_token (
   token_id VARCHAR(255),
-  token BYTEA,
+  token LONGBLOB,
   authentication_id VARCHAR(255),
   user_name VARCHAR(255),
   client_id VARCHAR(255),
-  authentication BYTEA,
+  authentication LONGBLOB,
   refresh_token VARCHAR(255),
   PRIMARY KEY (authentication_id)
 );
 
 create table oauth_refresh_token (
   token_id VARCHAR(255),
-  token BYTEA,
-  authentication BYTEA
+  token LONGBLOB,
+  authentication LONGBLOB
 );
 
 create table oauth_code (
-  code VARCHAR(255), authentication BYTEA
+  code VARCHAR(255), authentication LONGBLOB
 );
 
 create table oauth_approvals (
@@ -50,5 +50,5 @@ create table oauth_approvals (
 	scope VARCHAR(255),
 	status VARCHAR(10),
 	expiresAt TIMESTAMP,
-	lastModifiedAt TIMESTAMP
+	lastModifiedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

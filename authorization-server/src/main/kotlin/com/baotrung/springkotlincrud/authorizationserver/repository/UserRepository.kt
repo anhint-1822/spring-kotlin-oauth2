@@ -7,4 +7,6 @@ import java.util.Optional
 interface UserRepository : JpaRepository<UserEntity, Long> {
 
     fun findByEmail(email: String): Optional<UserEntity>
+
+    fun findByResetToken(resetToken: String): Optional<UserEntity>
 }

@@ -8,12 +8,12 @@ logging:
 
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/authorization_server?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
-    username: postgres
-    password: 1234
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/BaoTrung1?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: 123456
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     properties:
       hibernate:
         format_sql: true
@@ -42,3 +42,12 @@ app:
     redirect-uris: http://example.com
   jwt:
     signing-key: mykey
+email:
+  host: smtp.gmail.com
+  port: 587
+  username:
+  password:
+  auth: true
+  smtp: smtp
+  tls: true
+  debug: true

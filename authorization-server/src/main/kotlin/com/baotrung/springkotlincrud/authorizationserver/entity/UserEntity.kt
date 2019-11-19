@@ -13,20 +13,23 @@ import javax.persistence.Table
 @Table(name = "users")
 data class UserEntity (
 
-    @Id
-    var id: String,
+        @Id
+        var id: String,
 
-    @Column(name = "email", nullable = false)
-    var email: String,
+        @Column(name = "email", nullable = false)
+        var email: String,
 
-    @Column(name = "password", nullable = false)
-    var password: String,
+        @Column(name = "password", nullable = false)
+        var password: String?,
 
-    @ManyToMany(fetch = FetchType.EAGER)
+        @Column(name = "reset_token")
+        var resetToken: String?,
+
+        @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",
             joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
             inverseJoinColumns = [JoinColumn(name = "role_id", referencedColumnName = "id")]
     )
-    var roles: Set<RoleEntity>
+        var roles: Set<RoleEntity>
 )

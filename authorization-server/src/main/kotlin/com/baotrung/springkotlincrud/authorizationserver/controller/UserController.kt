@@ -2,10 +2,9 @@ package com.baotrung.springkotlincrud.authorizationserver.controller
 
 import com.baotrung.springkotlincrud.authorizationserver.dto.request.RegisterReqDto
 import com.baotrung.springkotlincrud.authorizationserver.service.UserService
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 
 @RestController
@@ -15,5 +14,10 @@ class UserController(private val userService: UserService) {
     @PostMapping("/users/register")
     fun register(@Valid @RequestBody reqDto: RegisterReqDto) {
         userService.register(reqDto)
+    }
+
+    @PostMapping("/users/forgot-password")
+    fun forgotPassword(@Valid @RequestParam("email") email: String, httpServletRequest: HttpServletRequest){
+        userService.forgotPassword(email, httpServletRequest)
     }
 }
