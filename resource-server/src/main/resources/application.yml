@@ -4,16 +4,15 @@ server:
 logging:
   level:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.ashina.backend: DEBUG
 
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/BaoTrung2?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
-    username: root
-    password: 123456
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/resource_server?useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+    username: postgres
+    password: 1234
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: true
@@ -23,6 +22,5 @@ spring:
 app:
   oauth2:
     client-id: myapp
-    client-secret: secret
-    resource-id: myapi
+    client-secret: 18EIUnHWel
     token-info-uri: http://localhost:8901/oauth/check_token

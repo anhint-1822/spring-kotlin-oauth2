@@ -4,7 +4,6 @@ server:
 logging:
   level:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.ashina.backend: DEBUG
 
 spring:
   datasource:
@@ -25,23 +24,9 @@ spring:
     port: 6379
     password:
 
-security:
-  oauth2:
-    resource:
-      filter-order: 3
+jwt:
+  signing-key: mykey
 
-app:
-  oauth2:
-    client-id: myapp
-    client-secret: secret
-    grant-types: authorization_code,password,refresh_token
-    scopes: read,write
-    access-token-validity-seconds: 2592000
-    refresh-token-validity-seconds: 2592000
-    resource-ids: myapi
-    redirect-uris: http://example.com
-  jwt:
-    signing-key: mykey
 email:
   host: smtp.gmail.com
   port: 587
