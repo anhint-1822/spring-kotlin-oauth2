@@ -14,12 +14,6 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.beans.factory.annotation.Autowired
 
 
-
-
-
-
-
-
 @Service
 class UserService(private val userRepository: UserRepository,
                   private val roleRepository: RoleRepository,
@@ -72,7 +66,34 @@ class UserService(private val userRepository: UserRepository,
         passwordResetEmail.setTo(user.email)
         passwordResetEmail.setSubject("Password Reset Request")
         passwordResetEmail.setText("To reset your password, click the link below:\n" + appUrl
-                + "/reset?token=" + user.resetToken)
+                + "/api/users/reset-password?token=" + user.resetToken)
+
+        emailService!!.sendEmail(passwordResetEmail)
+
+    }
+
+    fun resetPassword(token: String) {
+        val userOptional = userRepository.findByResetToken(token)
+        if (!userOptional.isPresent) {
+            throw RuntimeException("Token not correct")
+        }
+
+        val passwordReset = UUID.randomUUID().toString().substring(0, 8)
+        val user = UserEntity(
+                userOptional.get().id,
+                userOptional.get().email!!,
+                passwordEncoder.encode(passwordReset),
+                null,
+                userOptional.get().roles
+        )
+
+        userRepository.save(user)
+
+        val passwordResetEmail = SimpleMailMessage()
+        passwordResetEmail.setFrom("support@demo.com")
+        passwordResetEmail.setTo(user.email)
+        passwordResetEmail.setSubject("Password Reset Request")
+        passwordResetEmail.setText("Your password has been reset. This is new password : " + passwordReset);
 
         emailService!!.sendEmail(passwordResetEmail)
 

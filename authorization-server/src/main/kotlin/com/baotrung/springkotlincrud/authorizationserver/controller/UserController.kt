@@ -17,7 +17,15 @@ class UserController(private val userService: UserService) {
     }
 
     @GetMapping("/users/forgot-password")
-    fun forgotPassword(@Valid @RequestParam("email") email: String, httpServletRequest: HttpServletRequest){
+    fun forgotPassword(@Valid @RequestParam("email") email: String, httpServletRequest: HttpServletRequest): ResponseEntity<String> {
         userService.forgotPassword(email, httpServletRequest)
+        return ResponseEntity.ok("Email send success")
     }
+
+    @GetMapping("/users/reset-password")
+    fun resetPassword(@Valid @RequestParam("token") token: String): ResponseEntity<String> {
+        userService.resetPassword(token)
+        return ResponseEntity.ok("Password reset success")
+    }
+
 }

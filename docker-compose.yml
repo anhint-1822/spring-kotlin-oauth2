@@ -1,36 +1,68 @@
 version: '3.3'
 services:
-  db:
-    image: mysql
-    restart: always
+#  db:
+#    image: mysql
+#    restart: always
+#    environment:
+#      MYSQL_DATABASE: 'baotrung'
+#      # So you don't have to use root, but you can if you like
+#      MYSQL_USER: 'baotrung'
+#      # You can use whatever password you like
+#      MYSQL_PASSWORD: '123456'
+#      # Password for root access
+#      MYSQL_ROOT_PASSWORD: '123456'
+#    ports:
+#      # <Port exposed> : < MySQL Port running inside container>
+#      - '3307:3306'
+#    expose:
+#      # Opens port 3306 on the container
+#      - '3307'
+#      # Where our data will be persisted
+#    volumes:
+#      - mysqldata:/var/lib/mysql
+  fullstack-postgres:
+    image: postgres:latest
+    container_name: full_db_postgres
     environment:
-      MYSQL_DATABASE: 'baotrung'
-      # So you don't have to use root, but you can if you like
-      MYSQL_USER: 'baotrung'
-      # You can use whatever password you like
-      MYSQL_PASSWORD: '123456'
-      # Password for root access
-      MYSQL_ROOT_PASSWORD: '123456'
+      - POSTGRES_USER=baotrung
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=baotrung
     ports:
-      # <Port exposed> : < MySQL Port running inside container>
-      - '3307:3306'
+      - '5434:5432'
     expose:
-      # Opens port 3306 on the container
-      - '3307'
-      # Where our data will be persisted
+      - '5434'
     volumes:
-      - mysqldata:/var/lib/mysql
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - fullstack
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tbtrungit@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    depends_on:
+      - fullstack-postgres
+    ports:
+      - "5050:80"
+    networks:
+      - fullstack
+    restart: unless-stopped
+
   redis:
     image: redis:alpine
     volumes:
       - redisdata:/data
+    ports:
+      - "6379:6379"
     networks:
-      - sdnet
+      - fullstack
+
 networks:
-  sdnet:
-    driver: "bridge"
+  fullstack:
+    driver: bridge
 volumes:
-  mysqldata:
-    driver: "local"
+  db-data:
   redisdata:
     driver: "local"

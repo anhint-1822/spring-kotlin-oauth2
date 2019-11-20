@@ -21,29 +21,29 @@ import java.util.*
 @SpringBootApplication
 class AuthorizationServer(private val userRepository: UserRepository,
                           private val roleRepository: RoleRepository,
-                          private val passwordEncoder: PasswordEncoder) {
+                          private val passwordEncoder: PasswordEncoder) : CommandLineRunner {
 
-//    @Transactional
-//    override fun run(vararg args: String?) {
-//        roleRepository.deleteAll();
-//        val adminRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_ADMIN");
-//        val memberRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_MEMBER");
-//        roleRepository.saveAll(listOf(adminRole, memberRole))
-//
-//        userRepository.deleteAll()
-//        userRepository.save(UserEntity(
-//                UUID.randomUUID().toString(),
-//                "admin@example.com",
-//                passwordEncoder.encode("1234"),
-//                null,
-//                setOf(adminRole, memberRole)));
-//        userRepository.save(UserEntity(
-//                UUID.randomUUID().toString(),
-//                "member@example.com",
-//                null,
-//                passwordEncoder.encode("1234"),
-//                setOf(memberRole)));
-//    }
+    @Transactional
+    override fun run(vararg args: String?) {
+        roleRepository.deleteAll();
+        val adminRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_ADMIN");
+        val memberRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_MEMBER");
+        roleRepository.saveAll(listOf(adminRole, memberRole))
+
+        userRepository.deleteAll()
+        userRepository.save(UserEntity(
+                UUID.randomUUID().toString(),
+                "admin@example.com",
+                passwordEncoder.encode("1234"),
+                null,
+                setOf(adminRole, memberRole)));
+        userRepository.save(UserEntity(
+                UUID.randomUUID().toString(),
+                "member@example.com",
+                "admin@example.com",
+                null,
+                setOf(memberRole)));
+    }
 
 }
 
