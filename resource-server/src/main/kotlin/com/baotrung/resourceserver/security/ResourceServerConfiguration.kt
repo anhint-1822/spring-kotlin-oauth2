@@ -25,6 +25,7 @@ class ResourceServerConfiguration(private val oAuth2Properties: OAuth2Properties
         return remoteTokenServices
     }
 
+    @Throws(Exception::class)
     override fun configure(resources: ResourceServerSecurityConfigurer) {
         resources.tokenServices(remoteTokenServices())
     }

@@ -3,16 +3,16 @@ server:
 
 logging:
   level:
+    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/resource_server?useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-    username: postgres
-    password: 1234
+    url: jdbc:mysql://localhost:3307/trung?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: 123456
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     properties:
       hibernate:
         format_sql: true
@@ -21,6 +21,6 @@ spring:
 
 app:
   oauth2:
-    client-id: myapp
-    client-secret: 18EIUnHWel
+    client-id: trungapp4
+    client-secret: wG2KWx7JG5
     token-info-uri: http://localhost:8901/oauth/check_token

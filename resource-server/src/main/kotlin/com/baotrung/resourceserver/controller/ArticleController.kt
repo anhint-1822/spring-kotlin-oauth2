@@ -4,6 +4,7 @@ import com.baotrung.resourceserver.entity.Article
 import com.baotrung.resourceserver.repository.ArticleRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,9 +23,11 @@ class ArticleController(private val articleRepository: ArticleRepository) {
 
     @Transactional(readOnly = true)
     @GetMapping("/articles")
+    @PreAuthorize("#oauth2.hasAnyScope('read')")
     fun getAllArticle(): List<Article> = articleRepository.findAll()
 
     @Transactional(readOnly = true)
+    @PreAuthorize("#oauth2.hasScope('read')")
     @GetMapping("/articles/{id}")
     fun getArticleById(@PathVariable("id") id: String): ResponseEntity<Article> {
         return articleRepository.findById(id).map { article ->
@@ -33,6 +36,7 @@ class ArticleController(private val articleRepository: ArticleRepository) {
     }
 
     @Transactional
+    @PreAuthorize("#oauth2.hasScope('write')")
     @PostMapping("/articles")
     fun saveArticle(@Valid @RequestBody article: Article): Article {
         if (StringUtils.isEmpty(article.id)) {
@@ -42,6 +46,7 @@ class ArticleController(private val articleRepository: ArticleRepository) {
     }
 
     @Transactional
+    @PreAuthorize("#oauth2.hasScope('read')")
     @DeleteMapping("/article/{id}")
     fun deleteArticleById(@PathVariable("id") id: String): ResponseEntity<Void> {
         return articleRepository.findById(id).map { article ->
