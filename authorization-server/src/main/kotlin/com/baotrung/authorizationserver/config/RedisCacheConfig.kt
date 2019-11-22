@@ -1,59 +1,67 @@
-//package com.baotrung.springkotlincrud.authorizationserver.config
-//
-//import org.springframework.beans.factory.annotation.Value
-//import org.springframework.context.annotation.Bean
-//import org.springframework.context.annotation.Configuration
-//import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
-//import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
-//import org.springframework.data.redis.core.RedisTemplate
-//import org.springframework.data.redis.cache.RedisCacheManager
-//import java.util.concurrent.TimeUnit
-//
-//@Configuration
-//class RedisCacheConfig {
-//
-//    @Value("\${redis.host}")
-//    private val redisHost: String = ""
-//
-//    @Value("\${redis.port}")
-//    private val redisPort: Int? = null
-//
-//
-//    @Bean
-//    fun jedisConnectionFactory(): JedisConnectionFactory {
-//        val factory = JedisConnectionFactory()
-//        factory.hostName = redisHost
-//        factory.port = this.redisPort!!
-//        return factory
+package com.baotrung.springkotlincrud.authorizationserver.config
+
+import com.baotrung.authorizationserver.config.CacheConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.cache.CacheManager
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.cache.RedisCacheConfiguration
+import org.springframework.data.redis.cache.RedisCacheManager
+import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
+import java.time.Duration
+import java.util.*
+
+
+@Configuration
+@EnableConfigurationProperties(CacheConfigurationProperties::class)
+class RedisCacheConfig {
+
+
+    private fun createCacheConfiguration(timeoutInSeconds: Long): RedisCacheConfiguration {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofSeconds(timeoutInSeconds))
+    }
+
+    @Bean
+    fun redisConnectionFactory(properties: CacheConfigurationProperties): LettuceConnectionFactory {
+
+        val redisStandaloneConfiguration = RedisStandaloneConfiguration()
+        redisStandaloneConfiguration.hostName = properties.redisHost
+        redisStandaloneConfiguration.port = properties.redisPort
+        return LettuceConnectionFactory(redisStandaloneConfiguration)
+    }
+
+    @Bean
+    fun redisTemplate(cf: RedisConnectionFactory): RedisTemplate<String, String> {
+        val redisTemplate = RedisTemplate<String, String>()
+        redisTemplate.setConnectionFactory(cf)
+        return redisTemplate
+    }
+
+    @Bean
+    fun cacheConfiguration(properties: CacheConfigurationProperties): RedisCacheConfiguration {
+        return createCacheConfiguration(properties.timeoutSeconds)
+    }
+
+    @Bean
+    fun cacheManager(redisConnectionFactory: RedisConnectionFactory, properties: CacheConfigurationProperties): CacheManager {
+        val cacheConfigurations = HashMap<String, RedisCacheConfiguration>()
+
+        for (cacheNameAndTimeout in properties.cacheExpirations) {
+            cacheConfigurations[cacheNameAndTimeout.key] = createCacheConfiguration(cacheNameAndTimeout.value)
+        }
+
+        return RedisCacheManager
+                .builder(redisConnectionFactory)
+                .cacheDefaults(cacheConfiguration(properties))
+                .withInitialCacheConfigurations(cacheConfigurations).build()
+    }
+
+    //    @Bean
+//    fun tokenStore(redisConnectionFactory: RedisConnectionFactory): TokenStore {
+//        return RedisTokenStore(redisConnectionFactory)
 //    }
-//
-//    @Bean
-//    fun redisTemplate(): RedisTemplate<Any, Any> {
-//        val redisTemplate = RedisTemplate<Any, Any>()
-//        redisTemplate.setConnectionFactory(jedisConnectionFactory())
-//        return redisTemplate
-//    }
-//
-//    @Bean
-//    fun cacheManager(redisTemplate: RedisTemplate<Any, Any>): RedisCacheManager {
-//        // Open the most key prefix with the cache name
-//        val redisCache = RedisCacheManager(redisTemplate.expire("access",1,TimeUnit.MINUTES))
-////        redisCacheManager.setUsePrefix(true)
-////        //Here you can set a default expiration time unit in seconds.
-////        redisCacheManager.setDefaultExpiration(redisDefaultExpiration)
-////
-////        // Setting the expiration time of the cache
-////        val map = redisson.getMapCache("anyMap")
-////
-////// ttl = 10 minutes,
-////        map.put("key1", SomeObject(), 10, TimeUnit.MINUTES)
-////// ttl = 10 minutes, maxIdleTime = 10 seconds
-////        map.put("key1", SomeObject(), 10, TimeUnit.MINUTES, 10, TimeUnit.SECONDS)
-//
-//        return redisCache
-//    }
-//
-//    private fun RedisCacheManager(redisTemplate: Boolean): RedisCacheManager {
-//            return RedisCacheManager(redisTemplate)
-//    }
-//}
+}

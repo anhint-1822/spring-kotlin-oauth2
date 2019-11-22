@@ -1,5 +1,6 @@
 package com.baotrung.authorizationserver.service
 
+import com.baotrung.authorizationserver.dto.request.ChangePasswordDto
 import com.baotrung.authorizationserver.dto.request.RegisterReqDto
 import com.baotrung.authorizationserver.entity.RoleEntity
 import com.baotrung.authorizationserver.entity.UserEntity
@@ -10,6 +11,7 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.lang.IllegalArgumentException
 import java.util.UUID
 import javax.servlet.http.HttpServletRequest
 
@@ -96,6 +98,28 @@ class UserService(private val userRepository: UserRepository,
         passwordResetEmail.setText("Your password has been reset. This is new password : " + passwordReset);
 
         emailService!!.sendEmail(passwordResetEmail)
+
+    }
+
+    fun changePassword(changePasswordDto: ChangePasswordDto): String {
+
+        if (changePasswordDto.password != changePasswordDto.confirmPassword) {
+            throw IllegalArgumentException("Password and confirm password not match");
+        }
+
+        val users = userRepository.findByEmail(changePasswordDto.email)
+
+        if (!users.isPresent) {
+            throw IllegalArgumentException("Email not found");
+        }
+        val userFinal = users.get()
+        if (passwordEncoder.matches(changePasswordDto.oldPassword, users.get().password)) {
+            users.get().password = passwordEncoder.encode(changePasswordDto.password)
+            userRepository.save(userFinal)
+            return "Password change success"
+
+        }
+        throw IllegalArgumentException("Password not correct")
 
     }
 }

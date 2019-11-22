@@ -1,5 +1,6 @@
 package com.baotrung.authorizationserver.controller
 
+import com.baotrung.authorizationserver.dto.request.ChangePasswordDto
 import com.baotrung.authorizationserver.dto.request.RegisterReqDto
 import com.baotrung.authorizationserver.service.UserService
 import org.springframework.http.ResponseEntity
@@ -31,6 +32,11 @@ class UserController(private val userService: UserService) {
     fun resetPassword(@Valid @RequestParam("token") token: String): ResponseEntity<String> {
         userService.resetPassword(token)
         return ResponseEntity.ok("Password reset success")
+    }
+
+    @PostMapping("/users/change-password")
+    fun changePassword(@Valid @RequestBody changePasswordDto: ChangePasswordDto): ResponseEntity<String> {
+        return ResponseEntity.ok(userService.changePassword(changePasswordDto))
     }
 
 }
