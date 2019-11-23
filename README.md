@@ -1,6 +1,34 @@
 First, run docker compose use: `docker-compose up`
 
-In project, Postgres running port: 5434 and redis running port:  6379 . If you change port , please specific it  
+Show all docker running : docker ps
+
+I. Config master slave mysql
+
+When docker-compose up complete, you can type docker ps show all docker running.
+1. Login mysql master in docker : `docker exec -it "id container master" mysql -u root -p`
+Input password : 123456
+
+Type step by step command : 
+`CREATE USER 'trung'@'%' IDENTIFIED BY '123456';`
+`GRANT REPLICATION SLAVE ON *.* TO 'trungtb'@'%';`
+
+Type : `show master` you can see all information in master;
+
+2. Login mysql slave in docker: `docker exec -it "id container slave" mysql -u root -p`
+Input password : 123456
+
+Type step by step command : 
+`change master to master_host='your ip',master_port=3308,master_user='trungtb',master_password='123456',master_log_file='information you can see in master container when type command show masters; Example : my.000003', master_log_pos=information you can see in master container when type command show masters; Example:194";
+`
+
+Then type command : `start slave;`
+
+Show status slave type command : `show slave status \G`
+
+If mysql show command : `Waiting for master to send event` you has connect success connect to master.
+Now you can use master slave project. Try create database in master, Mysql auto sync to slave. 
+
+In project, Mysql master running port: 3308 and mysql slave running port: 3309 and redis running port:  6379 . If you change port , please specific it  
 in docker-compose.yml
 
 Use redis cli please use command : docker exec -it IdContainerRedis redis-cli
