@@ -10,7 +10,7 @@ Input password : 123456
 
 Type step by step command : 
 `CREATE USER 'trung'@'%' IDENTIFIED BY '123456';`
-`GRANT REPLICATION SLAVE ON *.* TO 'trungtb'@'%';`
+`GRANT REPLICATION SLAVE ON *.* TO 'trung'@'%';`
 
 Type : `show master` you can see all information in master;
 
@@ -18,8 +18,10 @@ Type : `show master` you can see all information in master;
 Input password : 123456
 
 Type step by step command : 
-`change master to master_host='your ip',master_port=3308,master_user='trungtb',master_password='123456',master_log_file='information you can see in master container when type command show masters; Example : my.000003', master_log_pos=information you can see in master container when type command show masters; Example:194";
+`change master to master_host='your ip',master_port=3308,master_user='trung',master_password='123456',master_log_file='information you can see in master container when type command show masters; Example : my.000003', master_log_pos=information you can see in master container when type command show masters; Example:194";
 `
+
+Complete: `change master to master_host='ipaddress',master_port=3308,master_user='trungtb',master_password='123456',master_log_file='my.000004',master_log_pos=194;`
 
 Then type command : `start slave;`
 
