@@ -43,10 +43,10 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
         return JdbcTokenStore(dataSource)
     }
 
-//    @Bean
-//    fun tokenStore(redisConnectionFactory: RedisConnectionFactory): TokenStore {
-//        return RedisTokenStore(redisConnectionFactory)
-//    }
+    @Bean
+    fun tokenStore(redisConnectionFactory: RedisConnectionFactory): TokenStore {
+        return RedisTokenStore(redisConnectionFactory)
+    }
 
     // =================================================================================================================
     // Authorization server configuration

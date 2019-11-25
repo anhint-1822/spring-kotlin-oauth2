@@ -30,6 +30,8 @@ Show status slave type command : `show slave status \G`
 If mysql show command : `Waiting for master to send event` you has connect success connect to master.
 Now you can use master slave project. Try create database in master, Mysql auto sync to slave. 
 
+Make slave readonly using command : `FLUSH TABLES WITH READ LOCK;` and `SET GLOBAL read_only = ON`;
+
 In project, Mysql master running port: 3308 and mysql slave running port: 3309 and redis running port:  6379 . If you change port , please specific it  
 in docker-compose.yml
 
