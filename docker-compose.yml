@@ -22,6 +22,25 @@ services:
   #      - mysqldata:/var/lib/mysql
   #    networks:
   #      - fullstack
+  authorization-server:
+    container_name: authorization-server
+    build:
+      ./authorization-server
+    image: authorization-server:latest
+    expose:
+      - 8091
+    ports:
+      - 8091:8091
+    networks:
+      - fullstack
+    depends_on:
+      - mysql-master
+      - redis
+      - mysql-slave
+    volumes:
+      - /data/springboot-docker-compose-authorization-server
+    command: ["./wait-for-it.sh", "mysql-master:3308"]
+
   mysql-master:
     image: 'mysql:5.7'
     restart: always
@@ -51,6 +70,8 @@ services:
       - type: bind
         source: ./mysql-slave-1.cnf
         target: /etc/mysql/conf.d/mysql-slave-1.cnf
+    depends_on:
+      - mysql-master
     environment:
       - MYSQL_ROOT_PASSWORD=123456
     command: ["--skip-log-bin", "--skip-log-slave-updates", "--skip-slave-start"]

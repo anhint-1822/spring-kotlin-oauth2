@@ -6,13 +6,13 @@ import com.baotrung.authorizationserver.entity.RoleEntity
 import com.baotrung.authorizationserver.entity.UserEntity
 import com.baotrung.authorizationserver.repository.RoleRepository
 import com.baotrung.authorizationserver.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.lang.IllegalArgumentException
-import java.util.UUID
+import java.util.*
 import javax.servlet.http.HttpServletRequest
 
 
@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest
 class UserService(private val userRepository: UserRepository,
                   private val roleRepository: RoleRepository,
                   private val passwordEncoder: PasswordEncoder) {
+
+    private val LOGGER = LoggerFactory.getLogger(UserService::class.java)
 
     @Autowired
     private val emailService: EmailService? = null
@@ -46,7 +48,7 @@ class UserService(private val userRepository: UserRepository,
         return roles.map { role -> roleRepository.findByName(role) }.toSet()
     }
 
-    fun forgotPassword(email: String, httpServletRequest: HttpServletRequest) {
+    fun forgotPassword(email: String, httpServletRequest: HttpServletRequest): Boolean {
         val userOptional = userRepository.findByEmail(email)
         if (!userOptional.isPresent) {
             throw RuntimeException("Email not exists")
@@ -69,12 +71,17 @@ class UserService(private val userRepository: UserRepository,
         passwordResetEmail.setSubject("Password Reset Request")
         passwordResetEmail.setText("To reset your password, click the link below:\n" + appUrl
                 + "/api/users/reset-password?token=" + user.resetToken)
-
-        emailService!!.sendEmail(passwordResetEmail)
-
+        var isSent = false
+        try {
+            emailService!!.sendEmail(passwordResetEmail)
+            isSent = true
+        } catch (e: Exception) {
+            LOGGER.error("Sending e-mail error: {}", e.message)
+        }
+        return isSent
     }
 
-    fun resetPassword(token: String) {
+    fun resetPassword(token: String): Boolean {
         val userOptional = userRepository.findByResetToken(token)
         if (!userOptional.isPresent) {
             throw RuntimeException("Token not correct")
@@ -97,7 +104,14 @@ class UserService(private val userRepository: UserRepository,
         passwordResetEmail.setSubject("Password Reset Request")
         passwordResetEmail.setText("Your password has been reset. This is new password : " + passwordReset);
 
-        emailService!!.sendEmail(passwordResetEmail)
+        var isSent = false
+        try {
+            emailService!!.sendEmail(passwordResetEmail)
+            isSent = true
+        } catch (e: Exception) {
+            LOGGER.error("Sending e-mail error: {}", e.message)
+        }
+        return isSent
 
     }
 

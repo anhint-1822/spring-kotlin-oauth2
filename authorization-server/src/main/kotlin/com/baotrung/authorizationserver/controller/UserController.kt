@@ -24,14 +24,20 @@ class UserController(private val userService: UserService) {
 
     @GetMapping("/users/forgot-password")
     fun forgotPassword(@Valid @RequestParam("email") email: String, httpServletRequest: HttpServletRequest): ResponseEntity<String> {
-        userService.forgotPassword(email, httpServletRequest)
-        return ResponseEntity.ok("Email send success")
+        val forgotPassword = userService.forgotPassword(email, httpServletRequest)
+        if (forgotPassword) {
+            return ResponseEntity.ok("Email send success")
+        }
+        return ResponseEntity.ok("Email send error")
     }
 
     @GetMapping("/users/reset-password")
     fun resetPassword(@Valid @RequestParam("token") token: String): ResponseEntity<String> {
-        userService.resetPassword(token)
-        return ResponseEntity.ok("Password reset success")
+        val isResetPassword = userService.resetPassword(token)
+        if (isResetPassword) {
+            return ResponseEntity.ok("Password reset success")
+        }
+        return ResponseEntity.ok("Password reset fail")
     }
 
     @PostMapping("/users/change-password")
