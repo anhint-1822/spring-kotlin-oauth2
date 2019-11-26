@@ -31,18 +31,37 @@ services:
       - 8091
     ports:
       - 8091:8091
-    networks:
-      - fullstack
+    network_mode: host
     depends_on:
       - mysql-master
       - redis
       - mysql-slave
     volumes:
       - /data/springboot-docker-compose-authorization-server
-    command: ["./wait-for-it.sh", "mysql-master:3308"]
+    command: ["./wait-for-it.sh", "mysql-master:3308", "java", "-jar" , "/authorization-server-0.0.1-SNAPSHOT.jar"]
+
+  resource-server:
+    container_name: resource-server
+    build:
+      ./resource-server
+    image: resource-server:latest
+    expose:
+      - 8888
+    ports:
+      - 8888:8888
+    network_mode: host
+    depends_on:
+      - mysql-master
+      - redis
+      - mysql-slave
+    volumes:
+      - /data/springboot-docker-compose-resource-server
+    command: ["./wait-for-it.sh", "mysql-master:3308", "java", "-jar" , "/resource-server-0.0.1-SNAPSHOT.jar"]
+
 
   mysql-master:
-    image: 'mysql:5.7'
+    container_name: mysql-master
+    image: 'mysql'
     restart: always
     ports:
       - '3308:3306'
@@ -60,7 +79,8 @@ services:
     command: ["--log-bin=my"]
 
   mysql-slave:
-    image: 'mysql:5.7'
+    image: 'mysql'
+    container_name: mysql-slave
     restart: always
     ports:
       - '3309:3306'

@@ -10,7 +10,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3308/baotrung?useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-    username: baotrung
+    username: root
     password: 123456
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
