@@ -16,6 +16,17 @@ import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore
 import javax.sql.DataSource
+import org.springframework.data.redis.cache.RedisCacheManager
+import org.springframework.data.redis.cache.RedisCacheConfiguration
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices
+import java.time.Duration
+import java.util.HashMap
+import java.time.Duration.ofMillis
+import org.springframework.context.annotation.Primary
+
+
+
+
 
 
 @Configuration
@@ -71,5 +82,30 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
         security
                 .tokenKeyAccess("isAuthenticated()")
                 .checkTokenAccess("isAuthenticated()")
+    }
+
+    @Bean(name = ["cacheManager"])
+    fun cacheManager(connectionFactory: RedisConnectionFactory): RedisCacheManager {
+        val conf_ready_info = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMillis(50000))
+
+        val conf_base_info = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMillis(60000))
+
+        val cacheConfigurations = HashMap<String, RedisCacheConfiguration>()
+        cacheConfigurations["client_id_to_access:trung"] = conf_base_info
+
+        return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
+                .withInitialCacheConfigurations(cacheConfigurations).build()
+    }
+
+    @Bean
+    @Primary
+    fun tokenServices(): DefaultTokenServices {
+        val defaultTokenServices = DefaultTokenServices()
+        defaultTokenServices.setTokenStore(tokenStore())
+        defaultTokenServices.setSupportRefreshToken(true)
+        defaultTokenServices.setAccessTokenValiditySeconds(60)
+        return defaultTokenServices
     }
 }
