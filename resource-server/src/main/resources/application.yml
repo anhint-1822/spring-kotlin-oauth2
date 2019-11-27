@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: 8889
 
 logging:
   level:
@@ -22,6 +22,6 @@ spring:
 
 app:
   oauth2:
-    client-id: trungapp4
-    client-secret: PehP0mIb82
+    client-id: trungapp1
+    client-secret: 4p5jXJ43Rt
     token-info-uri: http://localhost:8901/oauth/check_token
