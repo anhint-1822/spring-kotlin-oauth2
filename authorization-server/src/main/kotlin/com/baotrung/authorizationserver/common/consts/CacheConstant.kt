@@ -6,7 +6,7 @@ class CacheConstant {
     var SPLIT = ":"
 
 
-    var PREFIX = "taroco$SPLIT"
+    var PREFIX = "$SPLIT"
 
 
     var REDIS_SESSION_PREFIX = PREFIX + "session"
