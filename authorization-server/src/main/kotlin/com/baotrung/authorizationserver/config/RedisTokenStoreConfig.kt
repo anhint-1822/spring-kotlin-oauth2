@@ -1,50 +1,35 @@
 //package com.baotrung.authorizationserver.config
 //
-//import org.springframework.beans.factory.annotation.Value
 //import org.springframework.context.annotation.Bean
-//import org.springframework.data.redis.cache.RedisCacheManager
+//import org.springframework.data.redis.cache.RedisCache
 //import org.springframework.data.redis.core.RedisTemplate
-//import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
-//import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
-//
-//
+//import org.springframework.security.core.userdetails.UserCache
+//import org.springframework.security.core.userdetails.cache.SpringCacheBasedUserCache
 //
 //
 //class RedisTokenStoreConfig {
 //
-//    @Value("\${redis.hostname}")
-//    private val redisHostName: String = null
+//    val REDIS_CACHE_NAME = "redis_cache_name"//不为null即可
+//    val REDIS_PREFIX = "redis_cache_prefix"//不为null即可
+//    val EXPIRE: Long? = 60 * 60L//缓存有效时间
 //
-//    @Value("\${redis.port}")
-//    private val redisPort: Int = 0
-//
+//    /**
+//     * 配置用以存储用户认证信息的缓存
+//     */
 //    @Bean
-//    fun propertySourcesPlaceholderConfigurer(): PropertySourcesPlaceholderConfigurer {
-//        return PropertySourcesPlaceholderConfigurer()
+//    fun redisCache(redisTemplate: RedisTemplate<*, *>): RedisCache {
+//        return  RedisCache(REDIS_CACHE_NAME, REDIS_PREFIX.toByteArray(), redisTemplate, EXPIRE)
 //    }
 //
+//    /**
+//     *
+//     * 创建UserDetails存储服务的Bean：使用Redis作为缓存介质
+//     * UserDetails user = this.userCache.getUserFromCache(username)
+//     */
 //    @Bean
-//    fun jedisConnectionFactory(): JedisConnectionFactory {
-//        val factory = JedisConnectionFactory()
-//        factory.setHostName(redisHostName)
-//        factory.port = redisPort
-//        factory.usePool = true
-//        return factory
-//    }
-//
-//    @Bean
-//    fun redisTemplate(): RedisTemplate<Any, Any> {
-//        val redisTemplate = RedisTemplate<Any, Any>()
-//        redisTemplate.setConnectionFactory(jedisConnectionFactory())
-//        return redisTemplate
-//    }
-//
-//    @Bean
-//    fun cacheManager(): RedisCacheManager {
-//        return RedisCacheManager(redisTemplate())
-//    }
-//
-////    private fun RedisCacheManager(redisTemplate: RedisTemplate<Any, Any>): RedisCacheManager {
-//
+//    @Throws(Exception::class)
+//    fun userCache(redisCache: RedisCache): UserCache {
+//        val userCache = SpringCacheBasedUserCache(redisCache)
+//        return userCache
 //    }
 //}

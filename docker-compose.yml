@@ -16,7 +16,7 @@ services:
       - mysql-slave
     volumes:
       - "./wait-for-it.sh:/tmp/wait-for-it.sh"
-    command: ["./wait-for-it.sh", "mysql-master:3308", "java", "-jar" , "/authorization-server-0.0.1-SNAPSHOT.jar"]
+    command: ["./tmp/wait-for-it.sh", "mysql-master:3308", "java", "-jar" , "/authorization-server-0.0.1-SNAPSHOT.jar"]
 
   resource-server:
     container_name: resource-server
@@ -76,6 +76,7 @@ services:
 
   redis:
     image: redis:alpine
+    restart: always
     volumes:
       - redisdata:/data
     ports:

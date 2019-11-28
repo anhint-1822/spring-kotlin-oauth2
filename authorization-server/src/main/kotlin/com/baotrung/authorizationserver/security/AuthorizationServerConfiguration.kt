@@ -1,5 +1,6 @@
 package com.baotrung.authorizationserver.security
 
+import com.baotrung.authorizationserver.exception.CustomExceptionEntryPoint
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -11,28 +12,28 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer
+import org.springframework.security.oauth2.provider.ClientDetailsService
+import org.springframework.security.oauth2.provider.approval.ApprovalStore
+import org.springframework.security.oauth2.provider.approval.TokenApprovalStore
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
+import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices
+import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices
+import org.springframework.security.oauth2.provider.token.TokenEnhancer
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore
+import java.util.*
 import javax.sql.DataSource
-import org.springframework.data.redis.cache.RedisCacheManager
-import org.springframework.data.redis.cache.RedisCacheConfiguration
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices
-import java.time.Duration
-import java.util.HashMap
-import java.time.Duration.ofMillis
-import org.springframework.context.annotation.Primary
-
-
-
-
 
 
 @Configuration
 @EnableAuthorizationServer
 class AuthorizationServerConfiguration(private val authenticationManager: AuthenticationManager,
                                        private val userDetailsService: UserDetailsService,
+                                       private val customExceptionEntryPoint: CustomExceptionEntryPoint,
                                        private val dataSource: DataSource) : AuthorizationServerConfigurerAdapter() {
 
     @Value("\${jwt.signing-key}")
@@ -73,8 +74,7 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
         endpoints
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userDetailsService)
-                .accessTokenConverter(accessTokenConverter())
-                .tokenStore(tokenStore())
+                .tokenServices(defaultTokenServices())
     }
 
     @Throws(Exception::class)
@@ -82,30 +82,42 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
         security
                 .tokenKeyAccess("isAuthenticated()")
                 .checkTokenAccess("isAuthenticated()")
-    }
-
-    @Bean(name = ["cacheManager"])
-    fun cacheManager(connectionFactory: RedisConnectionFactory): RedisCacheManager {
-        val conf_ready_info = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMillis(50000))
-
-        val conf_base_info = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMillis(60000))
-
-        val cacheConfigurations = HashMap<String, RedisCacheConfiguration>()
-        cacheConfigurations["client_id_to_access:trung"] = conf_base_info
-
-        return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
-                .withInitialCacheConfigurations(cacheConfigurations).build()
+                .allowFormAuthenticationForClients()
+                .authenticationEntryPoint(customExceptionEntryPoint)
     }
 
     @Bean
-    @Primary
-    fun tokenServices(): DefaultTokenServices {
+    fun clientDetails(): ClientDetailsService {
+        return JdbcClientDetailsService(dataSource)
+    }
+
+    @Bean
+    fun tokenEnhancer(): TokenEnhancer {
+        return CustomTokenEnhancer()
+    }
+
+    @Bean
+    fun authorizationCodeServices(): AuthorizationCodeServices {
+        return JdbcAuthorizationCodeServices(dataSource)
+    }
+
+    @Bean
+    fun approvalStore(): ApprovalStore {
+        val store = TokenApprovalStore()
+        store.setTokenStore(tokenStore())
+        return store
+    }
+
+    @Bean
+    fun defaultTokenServices(): DefaultTokenServices {
         val defaultTokenServices = DefaultTokenServices()
-        defaultTokenServices.setTokenStore(tokenStore())
         defaultTokenServices.setSupportRefreshToken(true)
-        defaultTokenServices.setAccessTokenValiditySeconds(60)
-        return defaultTokenServices
+        defaultTokenServices.setTokenStore(tokenStore())
+        defaultTokenServices.setAccessTokenValiditySeconds(60 * 60 * 24)
+        defaultTokenServices.setRefreshTokenValiditySeconds(60 * 60 * 24)
+        val tokenEnhancerChain = TokenEnhancerChain()
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(accessTokenConverter(), tokenEnhancer()))
+        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain)
+        return defaultTokenServices;
     }
 }

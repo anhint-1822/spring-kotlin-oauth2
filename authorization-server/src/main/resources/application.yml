@@ -24,11 +24,7 @@ spring:
     host: localhost
     port: 6379
     password:
-  cache:
-    redis:
-      time-to-live: 600000
-
-
+#    timeout: 2000
 jwt:
   signing-key: mykey
 
