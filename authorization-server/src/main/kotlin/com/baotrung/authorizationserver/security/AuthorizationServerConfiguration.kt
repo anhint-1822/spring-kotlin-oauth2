@@ -1,9 +1,12 @@
 package com.baotrung.authorizationserver.security
 
 import com.baotrung.authorizationserver.exception.CustomExceptionEntryPoint
+import com.baotrung.authorizationserver.provider.CustomClientDetailsService
+import com.baotrung.authorizationserver.service.RedisService
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.*
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -15,7 +18,6 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.approval.ApprovalStore
 import org.springframework.security.oauth2.provider.approval.TokenApprovalStore
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
@@ -33,6 +35,8 @@ import javax.sql.DataSource
 @EnableAuthorizationServer
 class AuthorizationServerConfiguration(private val authenticationManager: AuthenticationManager,
                                        private val userDetailsService: UserDetailsService,
+                                       private val redisService: RedisService,
+                                       private val objectMapper: ObjectMapper,
                                        private val customExceptionEntryPoint: CustomExceptionEntryPoint,
                                        private val dataSource: DataSource) : AuthorizationServerConfigurerAdapter() {
 
@@ -66,7 +70,7 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
 
     @Throws(Exception::class)
     override fun configure(clients: ClientDetailsServiceConfigurer) {
-        clients.jdbc(dataSource)
+        clients.withClientDetails(clientDetailsServiceCustom())
     }
 
     @Throws(Exception::class)
@@ -77,6 +81,15 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
                 .tokenServices(defaultTokenServices())
     }
 
+    @Bean
+    @Lazy
+    @Scope(proxyMode = ScopedProxyMode.INTERFACES)
+    @Qualifier("clientDetailsServiceCustom")
+    fun clientDetailsServiceCustom(): ClientDetailsService {
+        return CustomClientDetailsService("Cache:clients:", dataSource, redisService, objectMapper)
+    }
+
+
     @Throws(Exception::class)
     override fun configure(security: AuthorizationServerSecurityConfigurer) {
         security
@@ -84,11 +97,6 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
                 .checkTokenAccess("isAuthenticated()")
                 .allowFormAuthenticationForClients()
                 .authenticationEntryPoint(customExceptionEntryPoint)
-    }
-
-    @Bean
-    fun clientDetails(): ClientDetailsService {
-        return JdbcClientDetailsService(dataSource)
     }
 
     @Bean
@@ -115,6 +123,7 @@ class AuthorizationServerConfiguration(private val authenticationManager: Authen
         defaultTokenServices.setTokenStore(tokenStore())
         defaultTokenServices.setAccessTokenValiditySeconds(60 * 60 * 24)
         defaultTokenServices.setRefreshTokenValiditySeconds(60 * 60 * 24)
+        defaultTokenServices.setClientDetailsService(clientDetailsServiceCustom())
         val tokenEnhancerChain = TokenEnhancerChain()
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(accessTokenConverter(), tokenEnhancer()))
         defaultTokenServices.setTokenEnhancer(tokenEnhancerChain)
