@@ -20,23 +20,25 @@ class AuthorizationServerApplication(private val userRepository: UserRepository,
     @Transactional
     override fun run(vararg args: String?) {
         roleRepository.deleteAll();
-        val adminRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_ADMIN");
-        val memberRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_MEMBER");
+        val adminRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_ADMIN")
+        val memberRole = RoleEntity(UUID.randomUUID().toString(), "ROLE_MEMBER")
         roleRepository.saveAll(listOf(adminRole, memberRole))
 
-        userRepository.deleteAll()
+        userRepository.deleteByEmail("admin@example.com")
         userRepository.save(UserEntity(
                 UUID.randomUUID().toString(),
                 "admin@example.com",
                 passwordEncoder.encode("1234"),
                 null,
-                setOf(adminRole, memberRole)));
+                setOf(adminRole, memberRole)))
+
+        userRepository.deleteByEmail("member@example.com")
         userRepository.save(UserEntity(
                 UUID.randomUUID().toString(),
                 "member@example.com",
                 passwordEncoder.encode("1234"),
                 null,
-                setOf(memberRole)));
+                setOf(memberRole)))
     }
 
 }

@@ -1,47 +1,102 @@
-First, run docker compose use: `docker-compose up`
+First, run docker compose use: `docker-compose up`.
 
-Show all docker running : docker ps
+When `docker-compose up` complete, you can type `docker ps` show all Docker containers running.
 
-I. Config master slave mysql
+In project:
 
-When docker-compose up complete, you can type docker ps show all docker running.
-1. Login mysql master in docker : `docker exec -it "id container master" mysql -u root -p`
-Input password : 123456
+- MySQL master running port: 3308 
+- MySQL slave running port: 3309
+- Redis running port:  6379
 
-Type step by step command : 
-`CREATE USER 'trung'@'%' IDENTIFIED BY '123456';`
-`GRANT REPLICATION SLAVE ON *.* TO 'trung'@'%';`
+---
 
-Type : `show master` you can see all information in master;
+### 1. MySQL replication
 
-2. Login mysql slave in docker: `docker exec -it "id container slave" mysql -u root -p`
-Input password : 123456
+#### 1.1. MySQL master
 
-Type step by step command : 
-`change master to master_host='your ip',master_port=3308,master_user='trung',master_password='123456',master_log_file='information you can see in master container when type command show masters; Example : my.000003', master_log_pos=information you can see in master container when type command show masters; Example:194";
-`
+1. Login MySQL root account with password `123456`:
+ 
+```bash
+$ docker exec -it <mysql-master container ID/name> mysql -u root -p
+``` 
 
-Complete: `change master to master_host='ipaddress',master_port=3308,master_user='trungtb',master_password='123456',master_log_file='my.000004',master_log_pos=194;`
+2. Create master account e.g. trung/123456:
 
-Then type command : `start slave;`
+```bash
+mysql> GRANT REPLICATION SLAVE ON *.* TO "trung"@"%" IDENTIFIED BY "123456";
+mysql> FLUSH PRIVILEGES;
+```
 
-Show status slave type command : `show slave status \G`
+3. Show master status:
 
-If mysql show command : `Waiting for master to send event` you has connect success connect to master.
-Now you can use master slave project. Try create database in master, Mysql auto sync to slave. 
+```bash
+mysql> SHOW MASTER STATUS \G
+```
 
-Make slave readonly using command : `FLUSH TABLES WITH READ LOCK;` and `SET GLOBAL read_only = ON`;
+#### 1.2. MySQL slave
 
-In project, Mysql master running port: 3308 and mysql slave running port: 3309 and redis running port:  6379 . If you change port , please specific it  
-in docker-compose.yml
+1. Login MySQL root account with password `123456`:
+ 
+```bash
+$ docker exec -it <mysql-slave container ID/name> mysql -u root -p
+``` 
 
-Use redis cli please use command : docker exec -it IdContainerRedis redis-cli
+2. Stop slave:
 
-In redis-cli : If you want monitor everything process(input,output) redis use command : monitor
+```bash
+mysql> STOP SLAVE;
+```
 
-With Api reset password: Please input username and password of email in application.yml. Then input email of user missing password.
-Api auto send to email use input. Please check token in email and confirm new password.
+3. Config connection to master:
 
+```bash
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.48.1',MASTER_PORT=3307,MASTER_USER='trung',MASTER_PASSWORD='123456',MASTER_LOG_FILE='my.000003',MASTER_LOG_POS=629;
+```
+
+with:
+
+- `MASTER_HOST`: Host IP address
+- `MASTER_USER` and `MASTER_PASSWORD`: username and password of master user.
+- `MASTER_LOG_FILE` and `MASTER_LOG_POS`: copied `File` and `Position` values from `SHOW MASTER STATUS` command result.
+
+4. Start slave:
+
+```bash
+mysql> START SLAVE;
+```
+
+5. Show slave status:
+
+```bash
+mysql> SHOW SLAVE STATUS \G
+```
+
+If log contains below lines, replication is successful:
+
+```
+Slave_IO_Running: Yes 
+Slave_SQL_Running: Yes
+```
+
+6. Make read-only for all users: 
+
+```bash
+mysql> SET GLOBAL super_read_only = ON;
+```
+
+Now you can use master slave project. Try create database in master, Mysql auto synchronize to slave. 
+
+---
+
+### 2. Redis
+
+Use Redis CLI: `docker exec -it IdContainerRedis redis-cli`
+
+In Redis CLI, if you want monitor everything process(input,output) Redis use command: `monitor`
+
+---
+
+### 3. OAuth2 authentication code flow
 
 1. Run authorization server (port 8901) and resource server (port 8080)
 
@@ -57,7 +112,7 @@ Login with valid username and password (admin@example.com/1234 or member@example
 $ curl myapp:secret@localhost:8901/oauth/token -dgrant_type=authorization_code -dredirect_uri=http://example.com -dcode=fIe1rY
 ```
 
-Use this token to access resource server APIs
+Use this token to access resource server APIs.
 
 4. Check access token
 
@@ -69,4 +124,38 @@ $ curl myapp:secret@localhost:8901/oauth/check_token -dtoken=eyJhbGciOiJIUzI1NiI
 
 ```bash
 $ curl myapp:secret@localhost:8901/oauth/token -dgrant_type=refresh_token -drefresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsibXlhcGkiXSwidXNlcl9uYW1lIjoiYWRtaW4iLCJzY29wZSI6WyJyZWFkIl0sImlkIjo5LCJleHAiOjE1NzEzODM1MzYsImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU4iXSwianRpIjoiODk4NjZjY2MtZTY2MC00ZWM2LTlhYTAtZTAzOGY4OTIxNjVjIiwiY2xpZW50X2lkIjoibXlhcHAifQ.q7gtCyoEJRfvs6fTGpnmgEJNM9EG1UCGLyF2qIn1hU0
+```
+
+---
+
+### 4. API reset password
+
+Please input username and password of email in `application.yml`. Then input email of user missing password.
+Api auto send to email use input. Please check token in email and confirm new password.
+
+---
+
+### 5. OTP authentication
+
+#### Step 1: Authenticate
+
+POST: /api/otp/authenticate
+
+```json
+{
+  "email": "yourEmail"
+}
+```
+
+If return 200 OK, please check mail to get OTP code. OTP code lives in 60 seconds.
+
+#### Step 2: Validate OTP
+
+POST: /api/otp/validate
+
+```json
+{
+  "email": "yourEmail",
+  "otp": "yourOTP"
+}
 ```

@@ -9,8 +9,6 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-
-import java.lang.RuntimeException
 import javax.transaction.Transactional
 
 @Service

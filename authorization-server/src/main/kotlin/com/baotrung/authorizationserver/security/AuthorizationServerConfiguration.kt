@@ -6,7 +6,11 @@ import com.baotrung.authorizationserver.service.RedisService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.*
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Lazy
+import org.springframework.context.annotation.Scope
+import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -27,7 +31,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore
-import java.util.*
+import java.util.Arrays
 import javax.sql.DataSource
 
 

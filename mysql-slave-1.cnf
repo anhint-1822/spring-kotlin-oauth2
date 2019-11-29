@@ -1,8 +1,5 @@
-#bind-address = 127.0.0.1
-#skip-networking
 [mysqld]
 server_id=2
 binlog_format=ROW
 gtid_mode=ON
 enforce-gtid-consistency=true
-read_only=ON
